@@ -1,0 +1,198 @@
+//be sure to set the move trigger moving the objects that hold the icon in place
+//to a duration of 5 seconds 
+
+//array of selections' groups
+anchors = [1g, 2g, 3g, 4g, 5g, 6g]
+
+//array of selections' result objects' ids
+objectIDs = [200, 201, 202, 203, 1334, 98, 12, 287, 98]
+
+//sets colors
+blackColor = 2c
+blackColor.set(0,0,0)
+
+whiteColor = 1c
+whiteColor.set(255, 255, 255)
+
+//serves to allow the button_b function to be only triggered once
+activate = counter(0)
+
+18g.alpha(opacity=0) //invisible
+
+extract obj_props
+gs = import gamescene
+
+// selector group
+selector = 7g
+
+// starts at first selection (index 0)
+selected = counter(0)
+
+//moves selections along to allow the player to see
+16g.lock_to_player(lock_y = false, duration = 3.5);
+
+//produces spikes to see if the player made the correct selection
+for i in 0..10 {
+    //30 per block, -15 for centralization
+    $.add (obj {
+        OBJ_ID: 1,
+        X: 1305 + 30*i,
+        Y: 285, 
+    })
+    if i <= 8 {
+        $.add (obj {
+            OBJ_ID: 8,
+            X: 1305 + 30*i,
+            Y: 315,
+        })
+    }
+    i += 1;
+}
+
+for i in ..objectIDs.length {
+    if i <= 5 { //selections' result objects
+        groupID = 8 + i
+        $.add (obj {
+            OBJ_ID: objectIDs[i],
+            X: 1335,
+            Y: 690,
+            GROUPS: groupID as @group,
+        })
+    } else if i <= 7 { //cube + exit dual portal
+        $.add (obj {
+            OBJ_ID: objectIDs[i],
+            X: 1335,
+            Y: 420,
+        })
+    } else if i == 8 { //if not entered in time kill the player
+        $.add (obj {
+            OBJ_ID: objectIDs[i],
+            X: 1335,
+            Y: 420,
+            GROUPS: 14g,
+        })
+    }
+    i += 1
+}
+
+//adds h blocks to avoid player from dying in cube
+for i in 0..10 {
+    $.add (obj {
+        OBJ_ID: 1859,
+        X: 1335 + i*30,
+        Y: 449,
+    })
+    i += 1
+}
+
+//selections
+for i in ..6 {
+    $.add (obj {
+        OBJ_ID: 497,
+        X: 45 + 30*i,
+        Y: 420,
+        SCALING: 0.5,
+        COLOR: blackColor,
+        GROUPS: [(i+1) as @group, 16g],
+    })
+    i += 1
+}
+
+//adds slab to avoid player from skipping level
+$.add (obj {
+    OBJ_ID: 40,
+    X: 75,
+    Y: 442.5,
+})
+
+//half speed initialization
+$.add (obj {
+    OBJ_ID: 200,
+    X: 0,
+    Y: 15,
+})
+
+//selector
+$.add (obj {
+    OBJ_ID: 1840,
+    X: 45,
+    Y: 420,
+    GROUPS: [7g, 16g],
+    COLOR: whiteColor,
+})
+
+//adds text to assist the player
+$.add (obj {
+    OBJ_ID: 914,
+    X: 120,
+    Y: 390,
+    SCALING: 0.7,
+    TEXT: $.b64encrypt("First Player for Selection"),
+    GROUPS: [16g, 17g]
+})
+
+$.add (obj {
+    OBJ_ID: 914,
+    X: 120,
+    Y: 450,
+    SCALING: 0.7,
+    TEXT: $.b64encrypt("Second Player for Selection"),
+    GROUPS: [16g, 17g]
+})
+
+$.add (obj {
+    OBJ_ID: 914,
+    X: 120,
+    Y: 390,
+    SCALING: 0.7,
+    TEXT: $.b64encrypt("Enabled!"),
+    GROUPS: [16g, 18g]
+})
+
+$.add (obj {
+    OBJ_ID: 914,
+    X: 120,
+    Y: 450,
+    SCALING: 0.7,
+    TEXT: $.b64encrypt("Enabled!"),
+    GROUPS: [16g, 18g]
+})
+
+//moving selector across selections
+gs.button_a().on_triggered(!{
+    if activate == counter(0) {
+        selected += 1
+        if selected == anchors.length {
+            selected -= anchors.length
+            wait()
+        }
+        current_anchor = anchors[
+            // convert selected to a normal number
+            selected.to_const(0..anchors.length)
+        ]
+        selector.move_to(current_anchor)
+    }
+})
+
+//entering selection
+gs.button_b().on_triggered(!{
+    if activate == counter(0) {
+        activate = counter(1)
+        14g.move(0, 90, 0.1)
+        switch selected {
+            case 0: 8g.move(0, -90, 0.1)
+            case 1: 9g.move(0, -90, 0.1)
+            case 2: 10g.move(0, -90, 0.1)
+            case 3: 11g.move(0, -90, 0.1)
+            case 4: 12g.move(0, -90, 0.1)
+            case 5: 13g.move(0, -90, 0.1)
+        }
+        17g.alpha(opacity=0) //invisible
+        18g.alpha(opacity=1) //visible
+    }
+})
+
+//shows player after 5 seconds
+wait(5)
+show_player()
+
