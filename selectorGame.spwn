@@ -1,5 +1,5 @@
-//be sure to set the move trigger moving the objects that hold the icon in place
-//to a duration of 5 seconds 
+//be sure to set the move trigger moving the objects (the slope and the block) that hold 
+//the icon (ship) in place to a duration of 5 seconds 
 
 //array of selections' groups
 anchors = [1g, 2g, 3g, 4g, 5g, 6g]
